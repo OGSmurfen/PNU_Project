@@ -1,5 +1,6 @@
 package com.papasmurfie.resources;
 
+import com.papasmurfie.dto.CompetitionDTO;
 import com.papasmurfie.dto.EditParticipationDTO;
 import com.papasmurfie.dto.ParticipationDTO;
 import com.papasmurfie.entities.CompetitionEntity;
@@ -10,6 +11,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @ApplicationScoped
@@ -36,6 +38,28 @@ public class ParticipationResource {
                                              @QueryParam("middleName")String middleName,
                                              @QueryParam("lastName")String lastName){
         return participationsService.findByNames(firstName, middleName, lastName);
+    }
+
+    @GET
+    @Path("/getByCompetition")
+    public List<ParticipationDTO> getByNames(@QueryParam("competitionName")String competitionName,
+                                             @QueryParam("competitionDate")String competitionDate){
+        return participationsService.findByCompetition(competitionName, competitionDate);
+    }
+    @GET
+    @Path("/getByDistance")
+    public List<ParticipationDTO> getByDistance(@QueryParam("eventDistance")BigDecimal distance){
+        return participationsService.findByDistance(distance);
+    }
+    @GET
+    @Path("/getByTime")
+    public List<ParticipationDTO> getByTime(@QueryParam("timeFinished")float timeFinished){
+        return participationsService.findByTime(timeFinished);
+    }
+    @GET
+    @Path("/getByPlace")
+    public List<ParticipationDTO> getByPlace(@QueryParam("placement")String place){
+        return participationsService.findByPlacement(place);
     }
 
     @POST

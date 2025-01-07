@@ -29,7 +29,7 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 .entity(new ErrorResponse(
                         500,
                         "Internal Server Error",
-                        exception.getMessage() + "\n " + exception.getCause().getMessage()
+                        exception.getMessage()
                 ))
                 .type("application/json")
                 .build();

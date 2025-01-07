@@ -1,6 +1,7 @@
 package com.papasmurfie.services;
 
 
+import com.papasmurfie.dto.CompetitionDTO;
 import com.papasmurfie.dto.EditParticipationDTO;
 import com.papasmurfie.dto.ParticipationDTO;
 import com.papasmurfie.entities.*;
@@ -12,6 +13,9 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @ApplicationScoped
@@ -214,11 +218,152 @@ public class ParticipationsService {
             participationDTOS.addAll(participationDTOSTemp);
         }
 
-        EntityValidator.throwNotFoundException(participationDTOS, "No results for competitors with these names");
+        EntityValidator.throwNotFoundException(participationDTOS, "No results from participation of competitors with these names");
 
         return participationDTOS;
     }
 
+    @Transactional
+    public List<ParticipationDTO> findByCompetition(String competitionName, String competitionDate) {
+        competitionName = "%" + competitionName.toLowerCase() + "%";
+        LocalDate date;
+        try {
+            date = LocalDate.parse(competitionDate);
+        } catch (DateTimeParseException e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(new ErrorResponse(
+                                    400,
+                                    "Bad Request",
+                                    "Invalid date format. Expected format is yyyy-MM-dd."
+                            ))
+                            .type("application/json")
+                            .build()
+            );
+        }
+
+        List<CompetitionEntity> competitions = unitOfWork.getCompetitionsRepository()
+                .find("LOWER(competitionName) LIKE ?1 AND competitionDate = ?2",
+                        competitionName,
+                        date)
+                .stream().toList();
+
+        EntityValidator.throwNotFoundException(competitions, "No competitions with this name");
+
+        List<ParticipationDTO> participationDTOS = new ArrayList<>();
+
+        for(CompetitionEntity e : competitions) {
+            List<ParticipationDTO> participationDTOSTemp= unitOfWork.getParticipationsRepository()
+                    .find("competition = ?1",
+                            e)
+                    .stream()
+                    .map(this::mapToDTO)
+                    .toList();
+            participationDTOS.addAll(participationDTOSTemp);
+        }
+
+        EntityValidator.throwNotFoundException(participationDTOS, "No results for participation on this competition");
+
+        return participationDTOS;
+    }
+
+    @Transactional
+    public List<ParticipationDTO> findByDistance(BigDecimal distance) {
+
+        EventEntity event = unitOfWork.getEventsRepository()
+                .find("distance = ?1",
+                        distance)
+                .firstResult();
+
+        EntityValidator.throwNotFoundException(event, "No events of this distance");
+
+        List<ParticipationDTO> participationDTOS = unitOfWork.getParticipationsRepository()
+                .find("event = ?1",
+                        event)
+                .stream().map(this::mapToDTO)
+                .toList();
+
+        EntityValidator.throwNotFoundException(participationDTOS, "No results for participation in this event");
+
+        return participationDTOS;
+    }
+    @Transactional
+    public List<ParticipationDTO> findByTime(float seconds) {
+
+        List<ResultEntity> results = unitOfWork.getResultsRepository()
+                .find("seconds = ?1",
+                        seconds)
+                .stream().toList();
+        if(results.isEmpty()){
+            throw new WebApplicationException(
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(new ErrorResponse(
+                                    404,
+                                    "Not Found",
+                                    "No results with this time"
+                            ))
+                            .type("application/json")
+                            .build()
+            );
+        }
+        EntityValidator.throwNotFoundException((List<?>) results, "No results with this time");
+
+        List<ParticipationDTO> participationDTOS = new ArrayList<>();
+
+        for(ResultEntity e : results) {
+            List<ParticipationDTO> temp = unitOfWork.getParticipationsRepository()
+                    .find("result = ?1",
+                            e)
+                    .stream().map(this::mapToDTO)
+                    .toList();
+
+            participationDTOS.addAll(temp);
+        }
+
+
+        EntityValidator.throwNotFoundException(participationDTOS, "No results for participation with these finishing times");
+
+        return participationDTOS;
+    }
+    @Transactional
+    public List<ParticipationDTO> findByPlacement(String placement) {
+
+        placement = "%" + placement.toLowerCase() + "%";
+
+        List<ResultEntity> results = unitOfWork.getResultsRepository()
+                .find("LOWER(place) LIKE ?1",
+                        placement)
+                .stream().toList();
+
+        if(results.isEmpty()){
+            throw new WebApplicationException(
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(new ErrorResponse(
+                                    404,
+                                    "Not Found",
+                                    "No results with this placement"
+                            ))
+                            .type("application/json")
+                            .build()
+            );
+        }
+        EntityValidator.throwNotFoundException(results, "No results with this placement");
+
+        List<ParticipationDTO> participationDTOS = new ArrayList<>();
+        for(ResultEntity e : results) {
+            List<ParticipationDTO> temp = unitOfWork.getParticipationsRepository()
+                    .find("result = ?1",
+                            e)
+                    .stream().map(this::mapToDTO)
+                    .toList();
+            participationDTOS.addAll(temp);
+        }
+
+
+        EntityValidator.throwNotFoundException(participationDTOS, "No results for participation with this placement");
+
+        return participationDTOS;
+    }
 
 
     //Mappers
