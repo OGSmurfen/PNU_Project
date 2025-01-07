@@ -10,6 +10,50 @@ import java.util.Map;
 
 public class EntityValidator {
 
+    public static void throwNotFoundException(List<?> list){
+        if(list.isEmpty()){
+            throw new WebApplicationException(
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(new ErrorResponse(
+                                    404,
+                                    "Not Found",
+                                    "Sorry, no results at this time"
+                            ))
+                            .type("application/json")
+                            .build()
+            );
+        }
+    }
+    public static void throwNotFoundException(Object entity){
+        if(entity == null){
+            throw new WebApplicationException(
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(new ErrorResponse(
+                                    404,
+                                    "Not Found",
+                                    "Sorry, no results at this time"
+                            ))
+                            .type("application/json")
+                            .build()
+            );
+        }
+    }
+    public static void throwNotFoundException(Object entity, String message){
+        if(entity == null){
+            throw new WebApplicationException(
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(new ErrorResponse(
+                                    404,
+                                    "Not Found",
+                                    message
+                            ))
+                            .type("application/json")
+                            .build()
+            );
+        }
+    }
+
+
     public static void validateUnique(PanacheRepository<?> repository, String propertyName, String value, String errorMessage) {
         boolean exists = repository
                 .find(propertyName, value)
