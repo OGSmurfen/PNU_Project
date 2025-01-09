@@ -8,8 +8,25 @@ import org.hibernate.exception.ConstraintViolationException;
 
 import java.time.format.DateTimeParseException;
 
+/**
+ * Global exception handler for handling different types of exceptions thrown in the application.
+ * This class is annotated with {@link Provider} and implements the {@link ExceptionMapper} interface to map exceptions to HTTP responses.
+ * It provides custom handling for {@link WebApplicationException}, {@link DateTimeParseException}, and {@link ConstraintViolationException}.
+ * If an unhandled exception occurs, a generic 500 Internal Server Error response is returned.
+ * <p>
+ * The {@link Provider} annotation marks this class as a global exception handler for the application,
+ * allowing it to automatically intercept and process exceptions across all JAX-RS resources.
+ * </p>
+ */
 @Provider
 public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
+
+    /**
+     * Maps the provided exception to an appropriate HTTP response.
+     *
+     * @param exception The exception that occurred during the request processing.
+     * @return A Response object containing the error details and corresponding HTTP status code.
+     */
     @Override
     public Response toResponse(Exception exception) {
         if (exception instanceof WebApplicationException) {
@@ -35,9 +52,12 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 .build();
     }
 
-
-
-
+    /**
+     * Handles {@link WebApplicationException} by returning the response contained in the exception.
+     *
+     * @param exception The WebApplicationException that was thrown.
+     * @return A Response object with the status and entity of the exception's response.
+     */
     private Response handleWebApplicationException(WebApplicationException exception) {
         return Response.status(exception.getResponse().getStatus())
                 .entity(exception.getResponse().getEntity())
@@ -45,6 +65,12 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 .build();
     }
 
+    /**
+     * Handles {@link DateTimeParseException} by returning a 400 Bad Request response with a detailed error message.
+     *
+     * @param exception The DateTimeParseException that was thrown.
+     * @return A Response object with a 400 status and an error message indicating the invalid date format.
+     */
     private Response handleDateTimeParseException(DateTimeParseException exception) {
         return Response.status(Response.Status.BAD_REQUEST)
                 .entity(new ErrorResponse(
@@ -56,6 +82,12 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 .build();
     }
 
+    /**
+     * Handles {@link ConstraintViolationException} by returning a 400 Bad Request response with a detailed error message.
+     *
+     * @param exception The ConstraintViolationException that was thrown.
+     * @return A Response object with a 400 status and an error message indicating invalid input data.
+     */
     private Response handleConstraintViolationException(ConstraintViolationException exception) {
         return Response.status(Response.Status.BAD_REQUEST)
                 .entity(new ErrorResponse(

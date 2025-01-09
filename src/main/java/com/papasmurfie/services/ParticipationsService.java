@@ -1,7 +1,5 @@
 package com.papasmurfie.services;
 
-
-import com.papasmurfie.dto.CompetitionDTO;
 import com.papasmurfie.dto.EditParticipationDTO;
 import com.papasmurfie.dto.ParticipationDTO;
 import com.papasmurfie.entities.*;
@@ -18,16 +16,34 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
+/**
+ * Service class for handling participation-related operations.
+ * <p>
+ * This service provides functionality for saving, deleting, updating, and querying participations.
+ * It is marked as {@link ApplicationScoped} to allow for CDI (Contexts and Dependency Injection) in the application.
+ */
 @ApplicationScoped
 public class ParticipationsService {
 
     private final IUnitOfWork unitOfWork;
 
 
+    /**
+     * Constructs a ParticipationsService with the specified UnitOfWork.
+     *
+     * @param unitOfWork The unit of work for accessing repositories.
+     */
     public ParticipationsService(IUnitOfWork unitOfWork) {
         this.unitOfWork = unitOfWork;
     }
 
+    /**
+     * Saves a new participation based on the provided ParticipationDTO.
+     *
+     * @param participationDTO The data transfer object containing the participation information.
+     * @return The saved ParticipationDTO.
+     * @throws WebApplicationException if any entity is not found or validation fails.
+     */
     @Transactional
     public ParticipationDTO save(ParticipationDTO participationDTO) {
         CompetitorEntity competitorEntity = unitOfWork.getCompetitorsRepository()
@@ -63,6 +79,13 @@ public class ParticipationsService {
         return mapToDTO(participationEntity);
     }
 
+    /**
+     * Deletes a participation based on the provided ParticipationDTO.
+     *
+     * @param participationDTO The data transfer object containing the participation information.
+     * @return The deleted ParticipationDTO.
+     * @throws WebApplicationException if the participation is not found.
+     */
     @Transactional
     public ParticipationDTO delete(ParticipationDTO participationDTO) {
         CompetitorEntity competitorEntity = unitOfWork.getCompetitorsRepository()
@@ -94,6 +117,13 @@ public class ParticipationsService {
         return mapToDTO(participationEntity);
     }
 
+    /**
+     * Updates an existing participation based on the provided EditParticipationDTO.
+     *
+     * @param editParticipationDTO The data transfer object containing the updated participation information.
+     * @return The updated ParticipationDTO.
+     * @throws WebApplicationException if any entity is not found or validation fails.
+     */
     @Transactional
     public ParticipationDTO update(EditParticipationDTO editParticipationDTO){
         CompetitorEntity competitorEntity = unitOfWork.getCompetitorsRepository()
@@ -179,6 +209,12 @@ public class ParticipationsService {
         );
     }
 
+    /**
+     * Retrieves all participations.
+     *
+     * @return A list of ParticipationDTO representing all participations.
+     * @throws WebApplicationException if no participations are found.
+     */
     @Transactional
     public List<ParticipationDTO> findAll() {
         List<ParticipationDTO> participationDTOS= unitOfWork.getParticipationsRepository()
@@ -192,6 +228,15 @@ public class ParticipationsService {
         return participationDTOS;
     }
 
+    /**
+     * Retrieves participations by competitor's names (first, middle, and last).
+     *
+     * @param firstName  The competitor's first name.
+     * @param middleName The competitor's middle name.
+     * @param lastName   The competitor's last name.
+     * @return A list of ParticipationDTO representing the participations of the competitors.
+     * @throws WebApplicationException if no competitors or participations are found.
+     */
     @Transactional
     public List<ParticipationDTO> findByNames(String firstName, String middleName, String lastName) {
 
@@ -223,6 +268,14 @@ public class ParticipationsService {
         return participationDTOS;
     }
 
+    /**
+     * Retrieves participations by competition name and date.
+     *
+     * @param competitionName The competition's name.
+     * @param competitionDate The competition's date.
+     * @return A list of ParticipationDTO representing the participations in the specified competition.
+     * @throws WebApplicationException if no competitions or participations are found.
+     */
     @Transactional
     public List<ParticipationDTO> findByCompetition(String competitionName, String competitionDate) {
         competitionName = "%" + competitionName.toLowerCase() + "%";
@@ -267,6 +320,13 @@ public class ParticipationsService {
         return participationDTOS;
     }
 
+    /**
+     * Retrieves participations by event distance.
+     *
+     * @param distance The event's distance.
+     * @return A list of ParticipationDTO representing the participations in the specified event.
+     * @throws WebApplicationException if no events or participations are found.
+     */
     @Transactional
     public List<ParticipationDTO> findByDistance(BigDecimal distance) {
 
@@ -287,6 +347,14 @@ public class ParticipationsService {
 
         return participationDTOS;
     }
+
+    /**
+     * Retrieves participations by the time in seconds.
+     *
+     * @param seconds The time in seconds.
+     * @return A list of ParticipationDTO representing the participations with the specified time.
+     * @throws WebApplicationException if no results with the given time are found.
+     */
     @Transactional
     public List<ParticipationDTO> findByTime(float seconds) {
 
@@ -325,6 +393,14 @@ public class ParticipationsService {
 
         return participationDTOS;
     }
+
+    /**
+     * Retrieves participations by placement.
+     *
+     * @param placement The placement (e.g., first, second, etc.).
+     * @return A list of ParticipationDTO representing the participations with the specified placement.
+     * @throws WebApplicationException if no results with the given placement are found.
+     */
     @Transactional
     public List<ParticipationDTO> findByPlacement(String placement) {
 
@@ -367,6 +443,16 @@ public class ParticipationsService {
 
 
     //Mappers
+    /**
+     * Maps the provided CompetitorEntity, CompetitionEntity, EventEntity, and ResultEntity
+     * to a ParticipationEntity.
+     *
+     * @param competitorEntity The competitor entity.
+     * @param competitionEntity The competition entity.
+     * @param eventEntity The event entity.
+     * @param result The result entity.
+     * @return A new ParticipationEntity.
+     */
     private ParticipationEntity mapToEntity(CompetitorEntity competitorEntity,
                                             CompetitionEntity competitionEntity,
                                             EventEntity eventEntity,
@@ -382,6 +468,12 @@ public class ParticipationsService {
 
     }
 
+    /**
+     * Maps the provided ParticipationEntity to a ParticipationDTO.
+     *
+     * @param participationEntity The participation entity.
+     * @return A ParticipationDTO representing the provided participation entity.
+     */
     private ParticipationDTO mapToDTO(ParticipationEntity participationEntity) {
         CompetitorEntity competitorEntity = participationEntity.getCompetitor();
         CompetitionEntity competitionEntity = participationEntity.getCompetition();

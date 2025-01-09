@@ -8,8 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class to validate entities in a repository, including checking if entities exist,
+ * validating uniqueness, and throwing appropriate exceptions if conditions are not met.
+ */
 public class EntityValidator {
 
+    /**
+     * Throws a "Not Found" exception if the provided list is empty.
+     *
+     * @param list The list to check for emptiness.
+     * @throws WebApplicationException If the list is empty.
+     */
     public static void throwNotFoundException(List<?> list){
         if(list.isEmpty()){
             throw new WebApplicationException(
@@ -24,6 +34,13 @@ public class EntityValidator {
             );
         }
     }
+
+    /**
+     * Throws a "Not Found" exception if the provided entity is null.
+     *
+     * @param entity The entity to check for null value.
+     * @throws WebApplicationException If the entity is null.
+     */
     public static void throwNotFoundException(Object entity){
         if(entity == null){
             throw new WebApplicationException(
@@ -38,6 +55,14 @@ public class EntityValidator {
             );
         }
     }
+
+    /**
+     * Throws a "Not Found" exception if the provided entity is null, with a custom error message.
+     *
+     * @param entity The entity to check for null value.
+     * @param message The custom error message to include in the exception.
+     * @throws WebApplicationException If the entity is null.
+     */
     public static void throwNotFoundException(Object entity, String message){
         if(entity == null){
             throw new WebApplicationException(
@@ -53,7 +78,16 @@ public class EntityValidator {
         }
     }
 
-
+    /**
+     * Validates if a value for a specific property is unique in the repository.
+     * If it already exists, a "Duplicate entry" exception is thrown.
+     *
+     * @param repository The repository to check for uniqueness.
+     * @param propertyName The name of the property to check for uniqueness.
+     * @param value The value of the property to validate.
+     * @param errorMessage The error message to include in the exception if the value is not unique.
+     * @throws WebApplicationException If the value already exists in the repository.
+     */
     public static void validateUnique(PanacheRepository<?> repository, String propertyName, String value, String errorMessage) {
         boolean exists = repository
                 .find(propertyName, value)
@@ -148,6 +182,17 @@ public class EntityValidator {
         return entity;
 
     }
+
+    /**
+     * Validates if a value for a specific property is unique in the repository, based on a set of properties and values.
+     * Throws a "Duplicate entry" exception if the value already exists.
+     *
+     * @param repository The repository to check for uniqueness.
+     * @param propertyValues A map with the properties and their values to check for uniqueness.
+     * @param errorMessage The error message to include in the exception if the value is not unique.
+     * @return The found entity, or throws an exception if not found.
+     * @throws WebApplicationException If the value already exists in the repository.
+     */
     public static Object validateUnique(PanacheRepository<?> repository, Map<String, Object> propertyValues , String errorMessage) {
         if (propertyValues == null || propertyValues.isEmpty()) {
             throw new IllegalArgumentException("Property values must not be null or empty");
@@ -183,6 +228,17 @@ public class EntityValidator {
 
     }
 
+    /**
+     * Validates if entities exist in the repository based on a custom query.
+     * Throws a "Not Found" exception if no entities are found.
+     *
+     * @param repository The repository to search the entities in.
+     * @param query The custom query to use for searching the entities.
+     * @param value The value to match in the query.
+     * @param errorMessage The error message to include in the exception if no entities are found.
+     * @return A list of found entities, or throws an exception if no entities are found.
+     * @throws WebApplicationException If no entities matching the query are found.
+     */
     public static <T> List<T> validateExist(PanacheRepository<T> repository, String query, String value, String errorMessage) {
         List<T> entities = repository
                 .find(query, value).list();
