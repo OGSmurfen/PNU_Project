@@ -48,7 +48,7 @@ public class CompetitionsService {
      * @throws WebApplicationException If a competition with the same name and date already exists.
      */
     @Transactional
-    public CompetitionDTO save(CompetitionDTO competitionDTO) {
+    public Response save(CompetitionDTO competitionDTO) {
         Map<String, Object> map = new HashMap<>();
         map.put("competitionName", competitionDTO.competitionName());
         map.put("competitionDate", competitionDTO.competitionDate());
@@ -62,7 +62,9 @@ public class CompetitionsService {
         CompetitionEntity c = mapToEntity(competitionDTO);
         unitOfWork.getCompetitionsRepository().persist(c);
 
-        return mapToDTO(c);
+        return Response.status(Response.Status.CREATED)
+                .entity(mapToDTO(c))
+                .build();
 
     }
 

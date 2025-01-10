@@ -6,8 +6,10 @@ import com.papasmurfie.services.CompetitionsService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import java.util.List;
 
@@ -53,9 +55,16 @@ public class CompetitionResource {
             summary = "Create a new competition",
             description = "This endpoint creates a new competition based on the provided competition data."
     )
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Competition created successfully"),
+            @APIResponse(responseCode = "400", description = "Bad request, invalid input"),
+            @APIResponse(responseCode = "409", description = "Duplicate entry"),
+            @APIResponse(responseCode = "500", description = "Internal server error")
+    })
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public CompetitionDTO create(CompetitionDTO competitionDTO) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response create(CompetitionDTO competitionDTO) {
         return competitionsService.save(competitionDTO);
     }
 
