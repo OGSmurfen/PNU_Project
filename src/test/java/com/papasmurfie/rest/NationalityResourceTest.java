@@ -2,16 +2,15 @@ package com.papasmurfie.rest;
 
 import com.papasmurfie.dto.EditNationalityDTO;
 import com.papasmurfie.dto.NationalityDTO;
-import com.papasmurfie.entities.NationalityEntity;
 import com.papasmurfie.resources.NationalityResource;
-import com.papasmurfie.uow.IUnitOfWork;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
 
 import java.util.List;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
 
 
 /**
@@ -22,16 +21,14 @@ import java.util.List;
 public class NationalityResourceTest {
 
     private final NationalityResource nationalityResource;
-    private final IUnitOfWork unitOfWork;
 
     /**
      * Constructor for the test class.
      *
      * @param nationalityResource the {@link NationalityResource} to inject the resource being tested
      */
-    public NationalityResourceTest(NationalityResource nationalityResource, IUnitOfWork unitOfWork) {
+    public NationalityResourceTest(NationalityResource nationalityResource) {
         this.nationalityResource = nationalityResource;
-        this.unitOfWork = unitOfWork;
     }
 
     /**
@@ -81,7 +78,7 @@ public class NationalityResourceTest {
 
     /**
      * Tests the deletion of a nationality via the resource.
-     * Verifies the competition is successfully deleted.
+     * Verifies the nationality is successfully deleted.
      */
     @Transactional
     @Test
@@ -114,6 +111,10 @@ public class NationalityResourceTest {
     }
 
 
+    /**
+     * Tests the retrieve of all nationalities from the resource via an HTTP GET action.
+     * Verifies the competition is successfully created and performs cleanup by deleting the created competition.
+     */
     @Test
     public void testGetAllREST() {
         given()
@@ -123,6 +124,10 @@ public class NationalityResourceTest {
                 .body(is(not(emptyString())));
     }
 
+    /**
+     * Tests the creation of a nationality from the resource via an HTTP POST action.
+     * Verifies the competition is successfully created and performs cleanup by deleting the created competition.
+     */
     @Test
     public void testCreateREST() {
         NationalityDTO dto = new NationalityDTO("Test Country");
@@ -137,18 +142,18 @@ public class NationalityResourceTest {
         nationalityResource.delete(dto.countryName());
     }
 
-//    @Transactional
+
 //    @Test
 //    public void testDeleteREST() {
 //
 //
-//        NationalityEntity e = new NationalityEntity();
-//        e.setCountryName("Test Country");
-//        unitOfWork.getNationalitiesRepository().persist(e);
+//        List<NationalityDTO> dtos = nationalityResource.list();
+//        String name = dtos.get(dtos.size()-1).countryName();
 //
+//        assert !dtos.isEmpty() : "No records found in the database!";
 //
 //        given()
-//                .when().delete("/nationality/Test")
+//                .when().delete(String.format("/api/v1/nationality/%s", name.replace(" ", "%20")))
 //                .then()
 //                .statusCode(200);
 //    }
